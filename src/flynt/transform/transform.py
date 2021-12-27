@@ -42,9 +42,16 @@ def transform_chunk(
             new_code = new_code.strip()
             if str_in_str and quote_type == QuoteTypes.single:
                 quote_type = QuoteTypes.double
-            new_code = set_quote_type(new_code, quote_type)
-            new_code = new_code.replace("\n", "\\n")
-            new_code = new_code.replace("\t", "\\t")
+
+            if isinstance(converted, ast.JoinedStr):
+                new_code = set_quote_type(new_code, quote_type)
+                new_code = new_code.replace("\n", "\\n")
+                new_code = new_code.replace("\t", "\\t")
+            # TODO
+            # elif (isinstance(converted, ast.Call)
+            #       and isinstance(converted.args[0], ast.JoinedStr)):
+            #     ...
+
             try:
                 ast.parse(new_code)
             except SyntaxError as e:

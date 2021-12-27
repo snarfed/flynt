@@ -5,12 +5,6 @@ import pytest
 from flynt import process, state
 
 
-@pytest.fixture()
-def aggressive(monkeypatch):
-    monkeypatch.setattr(state, "aggressive", True)
-    yield
-
-
 def test_timestamp():
     s_in = """'Timestamp: {:%Y-%m-%d %H:%M:%S}'.format(datetime.datetime.now())"""
     s_expected = """f'Timestamp: {datetime.datetime.now():%Y-%m-%d %H:%M:%S}'"""

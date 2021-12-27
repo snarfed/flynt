@@ -133,13 +133,16 @@ def transform_tuple(node):
     Returns ast.JoinedStr (f-string)
     """
 
-    format_str = node.left.s
+    return _transform_tuple(node.left.s, node.right.elts)
+
+
+def _transform_tuple(format_str, vars):
     matches = VAR_KEY_PATTERN.findall(format_str)
 
-    if len(node.right.elts) != len(matches):
+    if len(vars) != len(matches):
         raise ConversionRefused("This expression involves tuple unpacking.")
 
-    str_vars = deque(node.right.elts)
+    str_vars = deque(vars)
 
     segments = []
     blocks = deque(VAR_KEY_PATTERN.split(format_str))

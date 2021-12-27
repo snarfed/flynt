@@ -2,7 +2,7 @@ import ast
 from typing import Tuple
 
 from flynt import state
-from flynt.transform.format_call_transforms import joined_string, matching_call
+from flynt.transform import format_call_transforms, logging_call_transforms
 from flynt.transform.percent_transformer import transform_binop, supported_operands
 from flynt.linting.fstr_lint import FstrInliner
 
@@ -15,23 +15,29 @@ class FstringifyTransformer(ast.NodeTransformer):
 
     def visit_Call(self, node: ast.Call):
         """
-        Convert `ast.Call` to `ast.JoinedStr` f-string
+        Convert `ast.Call` to `ast.JoinedStr` f-string or `ast.Call` with f-string
         """
 
-        match = matching_call(node)
+        call_transforms = [(format_call_transforms.matching_call,
+                            format_call_transforms.joined_string)]
+        if state.aggressive:
+            call_transforms.append((logging_call_transforms.matching_call,
+                                    logging_call_transforms.joined_args))
 
-        if match:
-            state.call_candidates += 1
+        for match_fn, joined_fn in call_transforms:
+            match = match_fn(node)
+            if match:
+                state.call_candidates += 1
 
-            # bail in these edge cases...
-            if any(isinstance(arg, ast.Starred) for arg in node.args):
-                return node
+                # bail in these edge cases...
+                if any(isinstance(arg, ast.Starred) for arg in node.args):
+                    return node
 
-            result_node = joined_string(node)
-            self.visit(result_node)
-            self.counter += 1
-            state.call_transforms += 1
-            return result_node
+                result_node = joined_fn(node)
+                self.visit(result_node)
+                self.counter += 1
+                state.call_transforms += 1
+                return result_node
 
         return node
 

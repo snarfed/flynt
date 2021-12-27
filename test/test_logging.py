@@ -26,6 +26,8 @@ def test_noop_logging_calls(s, aggressive):
         ("logging.info('foo %s', var)", "logging.info(f'foo {var}')"),
         ("logging.info('foo %s %s', var1, var2)", "logging.info(f'foo {var1} {var2}')"),
         ("logging.info('foo %d', var)", "logging.info(f'foo {int(var)}')"),
+        ("x = 3; logging.info('foo %s', var); y = 4",
+         "x = 3\nlogging.info(f'foo {var}')\ny = 4"),
     ),
 )
 def test_format_string_logging_calls(s, expected, aggressive):

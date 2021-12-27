@@ -43,14 +43,14 @@ def transform_chunk(
             if str_in_str and quote_type == QuoteTypes.single:
                 quote_type = QuoteTypes.double
 
-            if isinstance(converted, ast.JoinedStr):
+            # TODO: handle this more elegantly. push down into
+            # format_call_transforms and logging_call_transforms,
+            # along wih quote_type? something else?
+            n = next(ast.iter_child_nodes(next(ast.iter_child_nodes(converted))))
+            if isinstance(n, (ast.Str, ast.JoinedStr)):
                 new_code = set_quote_type(new_code, quote_type)
                 new_code = new_code.replace("\n", "\\n")
                 new_code = new_code.replace("\t", "\\t")
-            # TODO
-            # elif (isinstance(converted, ast.Call)
-            #       and isinstance(converted.args[0], ast.JoinedStr)):
-            #     ...
 
             try:
                 ast.parse(new_code)

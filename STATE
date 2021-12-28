@@ -1,0 +1,23 @@
+STATE:
+===
+transform_chunk is only getting string literals with %s and {...}s in them. relevant call trace:
+
+process._transform_code
+process.fstringify_code_by_line
+split.get_fstringify_chunks (passed into _transform_code as candidates_iter_factory)
+get_chunks...?
+  is_string? something related to PyToken? or JoinTransformer?
+  but I tried commenting out `and chunk[-1].is_string()` at split.py:48, no luck
+
+
+PR message:
+===
+add support for %-formatting in logging calls with positional args
+
+This is largely an experiment that I don't expect we'll merge, definitely not as is. It's been discussed before (#85, #33, #93), and the conclusion in #85 was:
+
+> Converting this string would decrease performance of your application...In terms of python syntax, it's not a binary operator % formatting, but a function call. Flynt can't recognize this.
+
+Understood! I wanted to do it anyway, though, so I hacked very basic support for it into flynt in this PR. It only runs with aggressive on, all tests are passing, including new ones for this feature, and it's working on the few medium sized codebases I've tried it on so far.
+
+Regardless, this PR probably isn't good enough to merge as is, but more importantly, I expect you're still not interested in it at all. Which is ok! I do think in many codebases - possibly most - readability and maintainability are higher priority than strict CPU level performance, as @viswesh146 said in https://github.com/ikamensh/flynt/issues/85#issuecomment-749506170, and most codebases probably aren't even CPU bound anyway, but it's still totally up to you to make those choices for flynt. I'm just sending this since it's working for me, and to restart the conversation if you're interested.
